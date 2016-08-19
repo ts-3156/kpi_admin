@@ -13,6 +13,7 @@ module KpiAdmin
         case time_zone
           when 'utc' then 'UTC'
           when 'jst' then 'Tokyo'
+          else raise "Invalid time_zone: #{time_zone}"
         end
       end
 
@@ -57,14 +58,28 @@ module KpiAdmin
         duration.match(/^past_(\d+)_days/)[1].to_i - 1
       end
 
+      def action_values
+        params[:_action] && params[:_action] != '' ? Array.wrap("'#{params[:_action]}'") : nil
+      end
+
+      def device_type_values
+        params[:device_type] && params[:device_type] != '' ? Array.wrap("'#{params[:device_type]}'") : nil
+      end
+
+      def channel_value
+        params[:channel] && params[:channel] != '' ? params[:channel] : nil
+      end
+
       private
 
       def apply_frequency(days)
         num =
           case frequency
+            when 'hourly' then raise NotImplementedError
             when 'daily' then 1
             when 'weekly' then 7
             when 'monthly' then 30
+            else raise "Invalid frequency: #{frequency}"
           end
         days.map { |day| past_n_days(num, day) }
       end

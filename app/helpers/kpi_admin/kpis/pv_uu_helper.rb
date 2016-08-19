@@ -12,7 +12,7 @@ module KpiAdmin
       end
 
       def uu_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         count(DISTINCT session_id) total,
@@ -21,7 +21,8 @@ module KpiAdmin
       FROM search_logs
       WHERE
         created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN');
+        AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
         SQL
       end
 
@@ -31,13 +32,13 @@ module KpiAdmin
           {
             name: legend,
             data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: legend.in?(%w(removing removed))
+            visible: legend.in?(%w(new removing removed))
           }
         end
       end
 
       def uu_per_action_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         action,
@@ -46,8 +47,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY action
-      ORDER BY action;
+      ORDER BY action
         SQL
       end
 
@@ -57,13 +59,13 @@ module KpiAdmin
           {
             name: legend,
             data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: legend.in?(%w(removing removed))
+            visible: legend.in?(%w(new removing removed))
           }
         end
       end
 
       def pv_per_action_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         action,
@@ -73,58 +75,9 @@ module KpiAdmin
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
         AND action != 'waiting'
+        #{optional_conditions}
       GROUP BY action
-      ORDER BY action;
-        SQL
-      end
-
-      def fetch_uu_by_new_action
-        result = exec_sql(SearchLog, uu_by_new_action_sql)
-        %i(total guest login).map do |legend|
-          {
-            name: legend,
-            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend)] }
-          }
-        end
-      end
-
-      def uu_by_new_action_sql
-        <<-'SQL'.strip_heredoc
-      SELECT
-        :label date,
-        count(DISTINCT session_id) total,
-        count(DISTINCT if(user_id = -1, session_id, NULL)) guest,
-        count(DISTINCT if(user_id != -1, session_id, NULL)) login
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        AND action = 'new';
-        SQL
-      end
-
-      def fetch_pv_by_new_action
-        result = exec_sql(SearchLog, pv_by_new_action_sql)
-        %i(total guest login).map do |legend|
-          {
-            name: legend,
-            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend)] }
-          }
-        end
-      end
-
-      def pv_by_new_action_sql
-        <<-'SQL'.strip_heredoc
-      SELECT
-        :label date,
-        count(if(user_id = -1, 1, NULL)) guest,
-        count(if(user_id != -1, 1, NULL)) login,
-        count(*) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        AND action = 'new';
+      ORDER BY action
         SQL
       end
 
@@ -139,7 +92,7 @@ module KpiAdmin
       end
 
       def uu_per_device_type_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         device_type,
@@ -148,8 +101,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY device_type
-      ORDER BY device_type;
+      ORDER BY device_type
         SQL
       end
 
@@ -164,7 +118,7 @@ module KpiAdmin
       end
 
       def pv_per_device_type_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         device_type,
@@ -173,8 +127,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY device_type
-      ORDER BY device_type;
+      ORDER BY device_type
         SQL
       end
 
@@ -190,7 +145,7 @@ module KpiAdmin
       end
 
       def uu_per_referer_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         case
@@ -208,8 +163,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY _referer
-      ORDER BY _referer;
+      ORDER BY _referer
         SQL
       end
 
@@ -225,7 +181,7 @@ module KpiAdmin
       end
 
       def pv_per_referer_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         case
@@ -243,8 +199,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY _referer
-      ORDER BY _referer;
+      ORDER BY _referer
         SQL
       end
 
@@ -260,7 +217,7 @@ module KpiAdmin
       end
 
       def uu_per_channel_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         if(channel = '', 'blank', channel) channel,
@@ -269,8 +226,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY channel
-      ORDER BY channel;
+      ORDER BY channel
         SQL
       end
 
@@ -286,7 +244,7 @@ module KpiAdmin
       end
 
       def pv_per_channel_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         if(channel = '', 'blank', channel) channel,
@@ -295,8 +253,9 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_conditions}
       GROUP BY channel
-      ORDER BY channel;
+      ORDER BY channel
         SQL
       end
 
@@ -311,12 +270,14 @@ module KpiAdmin
       end
 
       def new_user_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         count(*) total
       FROM users
-      WHERE created_at BETWEEN :start AND :end;
+      WHERE
+        created_at BETWEEN :start AND :end
+        #{optional_conditions}
         SQL
       end
 
@@ -331,13 +292,15 @@ module KpiAdmin
       end
 
       def sign_in_sql
-        <<-'SQL'.strip_heredoc
+        <<-"SQL".strip_heredoc
       SELECT
         :label date,
         count(if(context = 'create', 1, NULL)) 'NewUser',
         count(if(context = 'update', 1, NULL)) 'ReturningUser'
       FROM sign_in_logs
-      WHERE created_at BETWEEN :start AND :end;
+      WHERE
+        created_at BETWEEN :start AND :end
+        #{optional_conditions}
         SQL
       end
     end

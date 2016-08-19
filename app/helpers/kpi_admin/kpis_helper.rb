@@ -1,5 +1,13 @@
 module KpiAdmin
   module KpisHelper
+    def optional_conditions
+      <<-"STR".strip_heredoc
+      #{action_values ? "AND action IN (#{action_values.join(',')})" : ''}
+      #{device_type_values ? "AND device_type IN (#{device_type_values.join(',')})" : ''}
+      #{channel_value ? "AND channel LIKE '%#{channel_value}%'" : ''}
+      STR
+    end
+
     def placeholder_values(days)
       {
         start: days.first.beginning_of_day,
