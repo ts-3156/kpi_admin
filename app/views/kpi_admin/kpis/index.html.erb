@@ -2,25 +2,25 @@
 
 <div class="row">
   <div class="col-xs-12">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis uu"></div>
     <div><%= link_to('PV / UU', one_path, class: 'btn btn-default') %></div>
   </div>
 
   <div class="col-xs-12">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_num"></div>
     <div><%= link_to('Search num', two_path, class: 'btn btn-default') %></div>
   </div>
 
   <div class="col-xs-12">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis new_user"></div>
     <div><%= link_to('New user', one_path, class: 'btn btn-default') %></div>
   </div>
 
   <div class="col-xs-12">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis sign_in"></div>
     <div><%= link_to('Sign in', one_path, class: 'btn btn-default') %></div>
   </div>
@@ -34,11 +34,16 @@
 
 <script>
   function reload() {
+    $('.loading').show();
     $('.kpis').empty();
+    $.each(charts, function (_, chart) {
+      chart.destroy();
+    });
+    charts = {};
 
     var url = "<%= one_path %>";
     fetch(url, 'uu')
-        .then(function(){return fetch(url, 'search_num', true)})
+        .then(function(){return fetch(url, 'search_num')})
         .then(function(){return fetch(url, 'new_user')})
         .then(function(){return fetch(url, 'sign_in')});
   }

@@ -4,7 +4,7 @@
 
 <div class="row">
   <div class="col-xs-12 col-sm-4">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_uu"></div>
   </div>
   <div class="col-xs-12 col-sm-4">
@@ -67,6 +67,9 @@
   function reload() {
     $('.loading').show();
     $('.kpis').empty();
+    $.each(charts, function (_, chart) {
+      chart.destroy();
+    });
     charts = {};
 
     var url = "<%= two_path %>";

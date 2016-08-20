@@ -286,8 +286,6 @@ module KpiAdmin
       FROM users
       WHERE
         created_at BETWEEN :start AND :end
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
         SQL
       end
 
@@ -310,8 +308,6 @@ module KpiAdmin
       FROM sign_in_logs
       WHERE
         created_at BETWEEN :start AND :end
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
         SQL
       end
     end
