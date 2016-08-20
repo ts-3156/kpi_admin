@@ -54,52 +54,6 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_search_rate
-        result = exec_sql(BackgroundSearchLog, search_rate_sql)
-        %i(guest login).uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend).to_f] }
-          }
-        end
-      end
-
-      def search_rate_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(count(a.session_id) = 0, 0, sum(b.guest) / sum(a.guest)) guest,
-        if(count(a.session_id) = 0, 0, sum(b.login) / sum(a.login)) login
-      FROM (
-        SELECT
-          session_id,
-          count(DISTINCT if(user_id = -1, session_id, NULL)) guest,
-          count(DISTINCT if(user_id != -1, session_id, NULL)) login
-        FROM search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-          #{optional_search_logs_conditions}
-        GROUP BY
-          session_id
-      ) a LEFT OUTER JOIN (
-        SELECT
-          session_id,
-          count(if(user_id = -1, 1, NULL)) guest,
-          count(if(user_id != -1, 1, NULL)) login
-        FROM background_search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-          #{optional_background_search_logs_conditions}
-        GROUP BY
-          session_id
-      ) b ON (a.session_id = b.session_id)
-        SQL
-      end
-
       def fetch_search_num_verification
         result = exec_sql(BackgroundSearchLog, search_num_verification_sql)
         %i(guest_verif login_verif).map do |legend|
@@ -119,20 +73,56 @@ module KpiAdmin
       FROM background_search_logs
       WHERE
         created_at BETWEEN :start AND :end
+        AND device_type NOT IN ('crawler', 'UNKNOWN')
         #{optional_common_conditions}
         #{optional_background_search_logs_conditions}
         SQL
       end
 
-      def fetch_search_uu_per_action
-        result = exec_sql(BackgroundSearchLog, search_uu_per_action_sql)
-        result.map(&:action).map do |legend|
+      def fetch_search_num_per_uu
+        result = exec_sql(BackgroundSearchLog, search_num_per_uu_sql)
+        %i(guest login).uniq.sort.map do |legend|
           {
             name: legend,
-            data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(others))
+            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend).to_f] }
           }
         end
+      end
+
+      def search_num_per_uu_sql
+        <<-"SQL".strip_heredoc
+      SELECT
+        :label date,
+        if(sum(a.session_id) = 0, 0, sum(b.guest_num) / sum(a.guest_uu)) guest,
+        if(sum(a.session_id) = 0, 0, sum(b.login_num) / sum(a.login_uu)) login
+      FROM (
+        SELECT
+          session_id,
+          count(DISTINCT if(user_id = -1, session_id, NULL)) guest_uu,
+          count(DISTINCT if(user_id != -1, session_id, NULL)) login_uu
+        FROM search_logs
+        WHERE
+          created_at BETWEEN :start AND :end
+          AND device_type NOT IN ('crawler', 'UNKNOWN')
+          #{optional_common_conditions}
+          #{optional_search_logs_conditions}
+        GROUP BY
+          session_id
+      ) a LEFT OUTER JOIN (
+        SELECT
+          session_id,
+          count(if(user_id = -1, 1, NULL)) guest_num,
+          count(if(user_id != -1, 1, NULL)) login_num
+        FROM background_search_logs
+        WHERE
+          created_at BETWEEN :start AND :end
+          AND device_type NOT IN ('crawler', 'UNKNOWN')
+          #{optional_common_conditions}
+          #{optional_background_search_logs_conditions}
+        GROUP BY
+          session_id
+      ) b ON (a.session_id = b.session_id)
+        SQL
       end
 
       def search_uu_per_action_sql
@@ -157,17 +147,6 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_search_num_per_action
-        result = exec_sql(BackgroundSearchLog, search_num_per_action_sql)
-        result.map(&:action).uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(others))
-          }
-        end
-      end
-
       def search_num_per_action_sql
         <<-"SQL".strip_heredoc
       SELECT
@@ -190,18 +169,7 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_search_rate_per_action
-        result = exec_sql(BackgroundSearchLog, search_rate_per_action_sql)
-        result.map(&:action).reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.rate.to_f] },
-            visible: !legend.in?(%w(others))
-          }
-        end
-      end
-
-      def search_rate_per_action_sql
+      def search_num_per_uu_per_action_sql
         <<-"SQL".strip_heredoc
       SELECT
         :label date,
@@ -240,16 +208,6 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_search_uu_per_device_type
-        result = exec_sql(BackgroundSearchLog, search_uu_per_device_type_sql)
-        result.map(&:device_type).map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.device_type == legend }.map { |r| [to_msec_unixtime(r.date), r.total] }
-          }
-        end
-      end
-
       def search_uu_per_device_type_sql
         <<-"SQL".strip_heredoc
       SELECT
@@ -263,18 +221,7 @@ module KpiAdmin
         #{optional_common_conditions}
         #{optional_background_search_logs_conditions}
       GROUP BY device_type
-      ORDER BY device_type
         SQL
-      end
-
-      def fetch_search_num_per_device_type
-        result = exec_sql(BackgroundSearchLog, search_num_per_device_type_sql)
-        result.map(&:device_type).map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.device_type == legend }.map { |r| [to_msec_unixtime(r.date), r.total] }
-          }
-        end
       end
 
       def search_num_per_device_type_sql
@@ -294,18 +241,7 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_search_rate_per_device_type
-        result = exec_sql(BackgroundSearchLog, search_rate_per_device_type_sql)
-        result.map(&:device_type).reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.device_type == legend }.map { |r| [to_msec_unixtime(r.date), r.rate.to_f] },
-            visible: !legend.in?(%w(others))
-          }
-        end
-      end
-
-      def search_rate_per_device_type_sql
+      def search_num_per_uu_per_device_type_sql
         <<-"SQL".strip_heredoc
       SELECT
         :label date,
@@ -339,65 +275,106 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_search_num_per_channel
-        result = exec_sql(BackgroundSearchLog, search_num_per_channel_sql)
-        result.map { |r| r.channel.to_s }.sort.uniq.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.channel == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(blank))
-          }
-        end
+      def search_uu_per_channel_sql
+        <<-"SQL".strip_heredoc
+      SELECT
+        :label date,
+        if(channel = '', 'NULL', channel) channel,
+        count(DISTINCT session_id) total
+      FROM background_search_logs
+      WHERE
+        created_at BETWEEN :start AND :end
+        AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_common_conditions}
+        #{optional_background_search_logs_conditions}
+      GROUP BY channel
+        SQL
       end
 
       def search_num_per_channel_sql
         <<-"SQL".strip_heredoc
       SELECT
         :label date,
-        if(channel = '', 'blank', channel) channel,
+        if(channel = '', 'NULL', channel) channel,
         count(*) total
       FROM background_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-      GROUP BY channel
-      ORDER BY channel
+        #{optional_common_conditions}
+        #{optional_background_search_logs_conditions}
+      GROUP BY
+        channel
         SQL
       end
 
-      def fetch_search_num_by_google
-        result = exec_sql(SearchLog, search_num_by_google_sql)
-        %i(not_search search).map do |legend|
-          {
-            name: legend,
-            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend).to_f] }
-          }
-        end
-      end
-
-      def search_num_by_google_sql
+      def search_num_per_uu_per_channel_sql
         <<-"SQL".strip_heredoc
       SELECT
         :label date,
-        count(if(b.session_id IS NULL, 1, NULL)) not_search,
-        count(if(b.session_id IS NOT NULL, 1, NULL)) search
+        if(b.session_id IS NULL, 'NULL', b.channel) channel,
+        if(count(a.session_id) = 0, 0, sum(b.count) / count(a.session_id)) rate
       FROM (
-        SELECT session_id
+        SELECT DISTINCT
+          session_id
         FROM search_logs
         WHERE
           created_at BETWEEN :start AND :end
           AND device_type NOT IN ('crawler', 'UNKNOWN')
-          AND action = 'new'
-          AND referer regexp '^https?://(www\.)?google(\.com|\.co\.jp)'
+          #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       ) a LEFT OUTER JOIN (
-        SELECT session_id
+        SELECT
+          session_id,
+          if(channel = '', 'NULL', channel) channel,
+          count(*) count
         FROM background_search_logs
         WHERE
           created_at BETWEEN :start AND :end
           AND device_type NOT IN ('crawler', 'UNKNOWN')
-          AND referer regexp '^http://(www\.)?egotter\.com/?$'
+          #{optional_common_conditions}
+        #{optional_background_search_logs_conditions}
+        GROUP BY
+          session_id, channel
       ) b ON (a.session_id = b.session_id)
+      GROUP BY
+        channel
         SQL
+      end
+
+      %i(action device_type channel).each do |type|
+        define_method("fetch_search_uu_per_#{type}") do
+          result = exec_sql(BackgroundSearchLog, send("search_uu_per_#{type}_sql"))
+          result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
+            {
+              name: legend,
+              data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
+              visible: !legend.in?(%w(others))
+            }
+          end
+        end
+
+        define_method("fetch_search_num_per_#{type}") do
+          result = exec_sql(BackgroundSearchLog, send("search_num_per_#{type}_sql"))
+          result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
+            {
+              name: legend,
+              data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
+              visible: !legend.in?(%w(others))
+            }
+          end
+        end
+
+        define_method("fetch_search_num_per_uu_per_#{type}") do
+          result = exec_sql(BackgroundSearchLog, send("search_num_per_uu_per_#{type}_sql"))
+          result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
+            {
+              name: legend,
+              data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.rate.to_f] },
+              visible: !legend.in?(%w(others))
+            }
+          end
+        end
       end
     end
   end

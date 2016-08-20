@@ -13,8 +13,10 @@
   </div>
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_rate"></div>
+    <div class="kpis search_num_per_uu"></div>
   </div>
+
+  <div class="col-xs-12"><h3>Per action</h3></div>
 
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
@@ -26,8 +28,10 @@
   </div>
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_rate_per_action"></div>
+    <div class="kpis search_num_per_uu_per_action"></div>
   </div>
+
+  <div class="col-xs-12"><h3>Per device_type</h3></div>
 
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
@@ -39,25 +43,22 @@
   </div>
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_rate_per_device_type"></div>
+    <div class="kpis search_num_per_uu_per_device_type"></div>
   </div>
 
-  <div class="col-xs-12 col-sm-6">
+  <div class="col-xs-12"><h3>Per channel</h3></div>
+
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_uu_per_channel"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_num_per_channel"></div>
   </div>
-  <div class="col-xs-12 col-sm-6">
+  <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_rate_per_channel"></div>
-  </div>
-
-  <div class="col-xs-12 col-sm-6">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_num_by_google"></div>
-  </div>
-  <div class="col-xs-12 col-sm-6">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis xxx"></div>
+    <div class="kpis search_num_per_uu_per_channel"></div>
   </div>
 </div>
 
@@ -76,17 +77,16 @@
     var types = [
       'search_uu',
       'search_num',
-      'search_rate',
+      'search_num_per_uu',
       'search_uu_per_action',
-      'search_rate_per_action',
-      'search_uu_per_device_type',
-      'search_rate_per_device_type'
-    ];
-    var types_statkcd = [
       'search_num_per_action',
+      'search_num_per_uu_per_action',
+      'search_uu_per_device_type',
       'search_num_per_device_type',
+      'search_num_per_uu_per_device_type',
+      'search_uu_per_channel',
       'search_num_per_channel',
-      'search_num_by_google'
+      'search_num_per_uu_per_channel'
     ];
     fetch(url, types[0])
         .then(function(){return fetch(url, types[1])})
@@ -95,10 +95,11 @@
         .then(function(){return fetch(url, types[4])})
         .then(function(){return fetch(url, types[5])})
         .then(function(){return fetch(url, types[6])})
-        .then(function(){return fetch(url, types_statkcd[0], true)})
-        .then(function(){return fetch(url, types_statkcd[1], true)})
-        .then(function(){return fetch(url, types_statkcd[2], true)})
-        .then(function(){return fetch(url, types_statkcd[3], true)});
+        .then(function(){return fetch(url, types[7])})
+        .then(function(){return fetch(url, types[8])})
+        .then(function(){return fetch(url, types[9])})
+        .then(function(){return fetch(url, types[10])})
+        .then(function(){return fetch(url, types[11])});
   }
 
   $(function () {

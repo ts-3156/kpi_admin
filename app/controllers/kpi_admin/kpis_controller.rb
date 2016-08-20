@@ -16,25 +16,30 @@ module KpiAdmin
       define_method(name) do
         return render unless request.xhr?
 
-        type = METHOD_TYPES.include?("fetch_#{params[:type]}".to_sym) ? params[:type] : 'uu'
-        result = {
-          type: type,
-          type => send("fetch_#{type}"),
-          now: now,
-          date_start: date_start.beginning_of_day,
-          date_end: date_end.end_of_day,
-          city: city,
-          time_zone: time_zone,
-          frequency: frequency,
-          duration: duration,
-          date_array: date_array,
-          sequence_number: sequence_number,
-          next_sequence_number: next_sequence_number,
-          max_sequence_number: max_sequence_number,
-          sql: show_sql(type, date_array.last),
-          url: request.path,
-        }
-        render json: result, status: 200
+        begin
+          type = METHOD_TYPES.include?("fetch_#{params[:type]}".to_sym) ? params[:type] : 'uu'
+          result = {
+            type: type,
+            type => send("fetch_#{type}"),
+            now: now,
+            date_start: date_start.beginning_of_day,
+            date_end: date_end.end_of_day,
+            city: city,
+            time_zone: time_zone,
+            frequency: frequency,
+            duration: duration,
+            date_array: date_array,
+            sequence_number: sequence_number,
+            next_sequence_number: next_sequence_number,
+            max_sequence_number: max_sequence_number,
+            sql: show_sql(type, date_array.last),
+            url: request.path,
+          }
+          render json: result, status: 200
+        rescue => e
+          logger.warn "#{self.class}##{__method__}: #{e.class} #{e.message}"
+          render json: {message: e.message}, status: 500
+        end
       end
     end
 
