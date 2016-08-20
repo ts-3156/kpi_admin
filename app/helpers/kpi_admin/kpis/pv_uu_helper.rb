@@ -22,7 +22,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
         SQL
       end
 
@@ -47,7 +48,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY action
       ORDER BY action
         SQL
@@ -75,7 +77,8 @@ module KpiAdmin
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
         AND action != 'waiting'
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY action
       ORDER BY action
         SQL
@@ -101,7 +104,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY device_type
       ORDER BY device_type
         SQL
@@ -127,7 +131,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY device_type
       ORDER BY device_type
         SQL
@@ -163,7 +168,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY _referer
       ORDER BY _referer
         SQL
@@ -199,7 +205,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY _referer
       ORDER BY _referer
         SQL
@@ -226,7 +233,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY channel
       ORDER BY channel
         SQL
@@ -253,7 +261,8 @@ module KpiAdmin
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
       GROUP BY channel
       ORDER BY channel
         SQL
@@ -277,7 +286,8 @@ module KpiAdmin
       FROM users
       WHERE
         created_at BETWEEN :start AND :end
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
         SQL
       end
 
@@ -300,7 +310,8 @@ module KpiAdmin
       FROM sign_in_logs
       WHERE
         created_at BETWEEN :start AND :end
-        #{optional_conditions}
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
         SQL
       end
     end

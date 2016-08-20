@@ -5,9 +5,9 @@ module KpiAdmin
     include KpisHelper
     include Kpis::DurationHelper
     include Kpis::PvUuHelper
-    include Kpis::SearchNumHelper
+    include Kpis::SearchCountHelper
 
-    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchNumHelper.public_instance_methods
+    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchCountHelper.public_instance_methods
 
     def index
     end

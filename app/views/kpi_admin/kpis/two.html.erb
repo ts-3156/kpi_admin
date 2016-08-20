@@ -3,22 +3,43 @@
 <div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
 
 <div class="row">
-  <div class="col-xs-12 col-sm-6">
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
+    <div class="kpis search_uu"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_num"></div>
   </div>
-  <div class="col-xs-12 col-sm-6">
+  <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_num_verification"></div>
+    <div class="kpis search_rate"></div>
   </div>
 
-  <div class="col-xs-12 col-sm-6">
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_uu_per_action"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_num_per_action"></div>
   </div>
-  <div class="col-xs-12 col-sm-6">
+  <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_rate_per_action"></div>
+  </div>
+
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_uu_per_device_type"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_num_per_device_type"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_rate_per_device_type"></div>
   </div>
 
   <div class="col-xs-12 col-sm-6">
@@ -50,31 +71,35 @@
 
     var url = "<%= two_path %>";
     var types = [
+      'search_uu',
       'search_num',
-      'search_num_verification',
-      'search_num_per_action',
+      'search_rate',
+      'search_uu_per_action',
       'search_rate_per_action',
+      'search_uu_per_device_type',
+      'search_rate_per_device_type'
+    ];
+    var types_statkcd = [
+      'search_num_per_action',
+      'search_num_per_device_type',
       'search_num_per_channel',
       'search_num_by_google'
     ];
-    fetch(url, types[0], true)
-        .then(function(){return fetch(url, types[1], true)})
-        .then(function(){return fetch(url, types[2], true)})
-        .then(function(){return fetch(url, types[3], true)})
-        .then(function(){return fetch(url, types[4], true)})
-        .then(function(){return fetch(url, types[5], true)});
+    fetch(url, types[0])
+        .then(function(){return fetch(url, types[1])})
+        .then(function(){return fetch(url, types[2])})
+        .then(function(){return fetch(url, types[3])})
+        .then(function(){return fetch(url, types[4])})
+        .then(function(){return fetch(url, types[5])})
+        .then(function(){return fetch(url, types[6])})
+        .then(function(){return fetch(url, types_statkcd[0], true)})
+        .then(function(){return fetch(url, types_statkcd[1], true)})
+        .then(function(){return fetch(url, types_statkcd[2], true)})
+        .then(function(){return fetch(url, types_statkcd[3], true)});
   }
 
-  $('input[name=time_zone]:radio').on('change', reload);
-  $('input[name=frequency]:radio').on('change', reload);
-  $('input[name=duration]:radio').on('change', reload);
-  $('input[name=user_id]:radio').on('change', reload);
-  $('input[name=ego_surfing]:radio').on('change', reload);
-  $('input[name=_action]:radio').on('change', reload);
-  $('input[name=device_type]:radio').on('change', reload);
-  $('input[name=channel]:radio').on('change', reload);
-
   $(function () {
+    after_load();
     reload();
   });
 </script>

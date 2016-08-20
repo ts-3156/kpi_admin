@@ -66,6 +66,14 @@ module KpiAdmin
         params[:ego_surfing] && params[:ego_surfing] != '' ? params[:ego_surfing] == 'true' : nil
       end
 
+      def status_value
+        params[:status] && params[:status] != '' ? params[:status] == 'true' : nil
+      end
+
+      def auto_value
+        params[:auto] && params[:auto] != '' ? params[:auto] == 'true' : nil
+      end
+
       def action_values
         params[:_action] && params[:_action] != '' ? Array.wrap("'#{params[:_action]}'") : nil
       end

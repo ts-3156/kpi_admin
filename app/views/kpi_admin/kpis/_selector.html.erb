@@ -1,21 +1,22 @@
 <div class="well">
-  <div>
-    <%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
-  </div>
-  <br>
+  <h5>Clock</h5>
+  <%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
 
-  <div>
-    <%= render partial: 'time_zone' %>
-    <%= render partial: 'frequency' %>
-    <%= render partial: 'duration' %>
-  </div>
-  <br>
+  <h5>General</h5>
+  <%= render partial: 'time_zone' %>
+  <%= render partial: 'frequency' %>
+  <%= render partial: 'duration' %>
 
-  <div>
-    <%= render partial: 'login' %>
-    <%= render partial: 'ego_surfing' %>
-    <%= render partial: 'action' %>
-    <%= render partial: 'device_type' %>
-    <%= render partial: 'channel' %>
-  </div>
+  <h5>Common</h5>
+  <%= render partial: 'user_id' %>
+  <%= render partial: 'device_type' %>
+  <%= render partial: 'channel' %>
+
+  <h5>SearchLog</h5>
+  <%= render partial: 'ego_surfing' %>
+  <%= render partial: 'action' %>
+
+  <h5>BackgroundSearchLog</h5>
+  <%= render partial: 'status' %>
+  <%= render partial: 'auto' %>
 </div>

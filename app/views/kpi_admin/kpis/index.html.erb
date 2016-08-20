@@ -4,7 +4,7 @@
   <div class="col-xs-12">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif') %>
     <div class="kpis uu"></div>
-    <div><%= link_to('PV/UU', one_path, class: 'btn btn-default') %></div>
+    <div><%= link_to('PV / UU', one_path, class: 'btn btn-default') %></div>
   </div>
 
   <div class="col-xs-12">
@@ -43,16 +43,8 @@
         .then(function(){return fetch(url, 'sign_in')});
   }
 
-  $('input[name=time_zone]:radio').on('change', reload);
-  $('input[name=frequency]:radio').on('change', reload);
-  $('input[name=duration]:radio').on('change', reload);
-  $('input[name=user_id]:radio').on('change', reload);
-  $('input[name=ego_surfing]:radio').on('change', reload);
-  $('input[name=_action]:radio').on('change', reload);
-  $('input[name=device_type]:radio').on('change', reload);
-  $('input[name=channel]:radio').on('change', reload);
-
   $(function () {
+    after_load();
     reload();
   });
 </script>

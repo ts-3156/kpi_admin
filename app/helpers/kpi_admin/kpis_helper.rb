@@ -1,6 +1,15 @@
 module KpiAdmin
   module KpisHelper
-    def optional_conditions
+    def boolean_condition(name, value)
+      case value
+        when nil then ''
+        when false then "AND #{name} = 0"
+        when true then "AND #{name} = 1"
+        else raise NotImplementedError
+      end
+    end
+
+    def optional_common_conditions
       user_id_condition =
         case user_id_value
           when nil then ''
@@ -8,19 +17,24 @@ module KpiAdmin
           when true then 'AND user_id != -1'
           else raise NotImplementedError
         end
-      ego_surfing_condition =
-        case ego_surfing_value
-          when nil then ''
-          when false then 'AND ego_surfing = 0'
-          when true then 'AND ego_surfing = 1'
-          else raise NotImplementedError
-        end
       <<-"STR".strip_heredoc
       #{user_id_condition}
-      #{ego_surfing_condition}
-      #{action_values ? "AND action IN (#{action_values.join(',')})" : ''}
       #{device_type_values ? "AND device_type IN (#{device_type_values.join(',')})" : ''}
       #{channel_value ? "AND channel LIKE '%#{channel_value}%'" : ''}
+      STR
+    end
+
+    def optional_search_logs_conditions
+      <<-"STR".strip_heredoc
+      #{boolean_condition(:ego_surfing, ego_surfing_value)}
+      #{action_values ? "AND action IN (#{action_values.join(',')})" : ''}
+      STR
+    end
+
+    def optional_background_search_logs_conditions
+      <<-"STR".strip_heredoc
+      #{boolean_condition(:status, status_value)}
+      #{boolean_condition(:auto, auto_value)}
       STR
     end
 

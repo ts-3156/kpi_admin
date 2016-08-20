@@ -76,6 +76,8 @@ function params(type, sequence_number) {
     user_id: $('input[name=user_id]:checked').val(),
     ego_surfing: $('input[name=ego_surfing]:checked').val(),
     _action: $('input[name=_action]:checked').val(),
+    status: $('input[name=status]:checked').val(),
+    auto: $('input[name=auto]:checked').val(),
     device_type: $('input[name=device_type]:checked').val(),
     channel: $('input[name=channel]:checked').val()
   }
@@ -140,4 +142,17 @@ function done(res) {
 function done_stacked(res) {
   draw(res, window.kpis.config_stacked);
   update_clock(res);
+}
+
+function after_load() {
+  $('input[name=time_zone]:radio').on('change', reload);
+  $('input[name=frequency]:radio').on('change', reload);
+  $('input[name=duration]:radio').on('change', reload);
+  $('input[name=user_id]:radio').on('change', reload);
+  $('input[name=ego_surfing]:radio').on('change', reload);
+  $('input[name=_action]:radio').on('change', reload);
+  $('input[name=status]:radio').on('change', reload);
+  $('input[name=auto]:radio').on('change', reload);
+  $('input[name=device_type]:radio').on('change', reload);
+  $('input[name=channel]:radio').on('change', reload);
 }

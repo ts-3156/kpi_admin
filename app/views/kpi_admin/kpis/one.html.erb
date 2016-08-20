@@ -90,16 +90,8 @@
         .then(function(){return fetch(url, types[6])});
   }
 
-  $('input[name=time_zone]:radio').on('change', reload);
-  $('input[name=frequency]:radio').on('change', reload);
-  $('input[name=duration]:radio').on('change', reload);
-  $('input[name=user_id]:radio').on('change', reload);
-  $('input[name=ego_surfing]:radio').on('change', reload);
-  $('input[name=_action]:radio').on('change', reload);
-  $('input[name=device_type]:radio').on('change', reload);
-  $('input[name=channel]:radio').on('change', reload);
-
   $(function () {
+    after_load();
     reload();
   });
 </script>
