@@ -1,9 +1,13 @@
 <%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
 
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
+
 <div class="table-records twitter_users"><%= image_tag asset_path('kpi_admin/ajax-loader.gif') %></div>
 <div class="table-records twitter_users_uid"><%= image_tag asset_path('kpi_admin/ajax-loader.gif') %></div>
 <div class="table-records friends"><%= image_tag asset_path('kpi_admin/ajax-loader.gif') %></div>
 <div class="table-records followers"><%= image_tag asset_path('kpi_admin/ajax-loader.gif') %></div>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
 
 <script>
   function fetch_table(url){

@@ -1,18 +1,24 @@
-<div class="btn-group" data-toggle="buttons">
-  <label class="btn btn-default active">
-    <input type="radio" name="id_type" value="session_id" checked> session_id
-  </label>
-  <label class="btn btn-default">
-    <input type="radio" name="id_type" value="user_id"> user_id
-  </label>
-  <label class="btn btn-default">
-    <input type="radio" name="id_type" value="uid"> uid
-  </label>
+<div class="well">
+  <div class="btn-group" data-toggle="buttons">
+    <label class="btn btn-default active">
+      <input type="radio" name="id_type" value="session_id" checked> session_id
+    </label>
+    <label class="btn btn-default">
+      <input type="radio" name="id_type" value="user_id"> user_id
+    </label>
+    <label class="btn btn-default">
+      <input type="radio" name="id_type" value="uid"> uid
+    </label>
+  </div>
 </div>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
 
 <div class="loading"><%= image_tag asset_path('kpi_admin/ajax-loader.gif') %></div>
 <div class="kpis rr number" style="height: 600px;"></div>
 <div class="kpis rr percentage" style="height: 600px;"></div>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
 
 <script>
   var config = {

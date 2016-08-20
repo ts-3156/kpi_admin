@@ -61,3 +61,83 @@ window.kpis.config_stacked = {
   },
   series: null
 };
+
+function failed(xhr) {
+  console.log(xhr.responseText);
+}
+
+function params(type, sequence_number) {
+  return {
+    type: type,
+    time_zone: $('input[name=time_zone]:checked').val(),
+    frequency: $('input[name=frequency]:checked').val(),
+    duration: $('input[name=duration]:checked').val(),
+    sequence_number: sequence_number,
+    user_id: $('input[name=user_id]:checked').val(),
+    ego_surfing: $('input[name=ego_surfing]:checked').val(),
+    _action: $('input[name=_action]:checked').val(),
+    device_type: $('input[name=device_type]:checked').val(),
+    channel: $('input[name=channel]:checked').val()
+  }
+}
+
+function fetch(url, type, stacked) {
+  var defer = fetch_one_day(url, type, 0);
+  var days_count = $('input[name=duration]:checked').data('num') + 1;
+  for (var i = 1; i < days_count; i++) {
+    defer = defer.then(function (res) {
+      stacked ? done_stacked(res) : done(res);
+      return fetch_one_day(url, type, res.next_sequence_number)
+    }, failed);
+  }
+  return defer.promise()
+}
+
+function fetch_one_day(url, type, sequence_number) {
+  return $.get(url, params(type, sequence_number))
+}
+
+var charts = {};
+
+function draw(res, config) {
+  if (charts[res.type]) {
+    var chart = charts[res.type];
+    $.each(res[res.type], function (_, new_serie) {
+      var found = false;
+      $.each(chart.series, function (_, cur_serie) {
+        if (new_serie.name == cur_serie.name) {
+          cur_serie.addPoint(new_serie.data[0], false);
+          found = true;
+          return false
+        }
+      });
+      if (!found) {
+        chart.addSeries(new_serie, false);
+      }
+    });
+    chart.redraw();
+  } else {
+    var conf = $.extend(true, {}, config);
+    conf.title.text = res.type;
+    conf.series = res[res.type];
+    conf.chart.renderTo = $('.' + res.type)[0];
+    $('.' + res.type).prev().hide();
+    charts[res.type] = new Highcharts.Chart(conf);
+  }
+}
+
+function update_clock(res) {
+  $('.date_start').text(res.date_start);
+  $('.date_end').text(res.date_end);
+  $('.now').text(res.now);
+}
+
+function done(res) {
+  draw(res, window.kpis.config);
+  update_clock(res);
+}
+
+function done_stacked(res) {
+  draw(res, window.kpis.config_stacked);
+  update_clock(res);
+}
