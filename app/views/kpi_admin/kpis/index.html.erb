@@ -1,7 +1,4 @@
-<%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
-<%= render partial: 'time_zone' %>
-<%= render partial: 'frequency' %>
-<%= render partial: 'duration' %>
+<%= render partial: 'selector' %>
 
 <div class="kpis uu"><%= image_tag asset_path('kpi_admin/ajax-loader.gif') %></div>
 <div><%= link_to('DAU', one_path, class: 'btn btn-default') %></div>

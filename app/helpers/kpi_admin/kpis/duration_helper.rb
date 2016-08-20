@@ -58,6 +58,14 @@ module KpiAdmin
         duration.match(/^past_(\d+)_days/)[1].to_i - 1
       end
 
+      def user_id_value
+        params[:user_id] && params[:user_id] != '' ? params[:user_id] == 'true' : nil
+      end
+
+      def ego_surfing_value
+        params[:ego_surfing] && params[:ego_surfing] != '' ? params[:ego_surfing] == 'true' : nil
+      end
+
       def action_values
         params[:_action] && params[:_action] != '' ? Array.wrap("'#{params[:_action]}'") : nil
       end

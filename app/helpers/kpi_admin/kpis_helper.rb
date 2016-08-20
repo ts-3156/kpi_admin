@@ -1,7 +1,23 @@
 module KpiAdmin
   module KpisHelper
     def optional_conditions
+      user_id_condition =
+        case user_id_value
+          when nil then ''
+          when false then 'AND user_id = -1'
+          when true then 'AND user_id != -1'
+          else raise NotImplementedError
+        end
+      ego_surfing_condition =
+        case ego_surfing_value
+          when nil then ''
+          when false then 'AND ego_surfing = 0'
+          when true then 'AND ego_surfing = 1'
+          else raise NotImplementedError
+        end
       <<-"STR".strip_heredoc
+      #{user_id_condition}
+      #{ego_surfing_condition}
       #{action_values ? "AND action IN (#{action_values.join(',')})" : ''}
       #{device_type_values ? "AND device_type IN (#{device_type_values.join(',')})" : ''}
       #{channel_value ? "AND channel LIKE '%#{channel_value}%'" : ''}

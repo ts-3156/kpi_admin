@@ -1,0 +1,21 @@
+<div class="well">
+  <div>
+    <%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
+  </div>
+  <br>
+
+  <div>
+    <%= render partial: 'time_zone' %>
+    <%= render partial: 'frequency' %>
+    <%= render partial: 'duration' %>
+  </div>
+  <br>
+
+  <div>
+    <%= render partial: 'login' %>
+    <%= render partial: 'ego_surfing' %>
+    <%= render partial: 'action' %>
+    <%= render partial: 'device_type' %>
+    <%= render partial: 'channel' %>
+  </div>
+</div>

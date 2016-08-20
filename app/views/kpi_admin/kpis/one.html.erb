@@ -1,14 +1,4 @@
-<div>
-  <%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
-  <%= render partial: 'time_zone' %>
-  <%= render partial: 'frequency' %>
-  <%= render partial: 'duration' %>
-</div>
-<div>
-  <%= render partial: 'action' %>
-  <%= render partial: 'device_type' %>
-  <%= render partial: 'channel' %>
-</div>
+<%= render partial: 'selector' %>
 
 <div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
 
@@ -77,6 +67,8 @@
       frequency: $('input[name=frequency]:checked').val(),
       duration: $('input[name=duration]:checked').val(),
       sequence_number: sequence_number,
+      user_id: $('input[name=user_id]:checked').val(),
+      ego_surfing: $('input[name=ego_surfing]:checked').val(),
       _action: $('input[name=_action]:checked').val(),
       device_type: $('input[name=device_type]:checked').val(),
       channel: $('input[name=channel]:checked').val()
@@ -181,6 +173,8 @@
   $('input[name=time_zone]:radio').on('change', reload);
   $('input[name=frequency]:radio').on('change', reload);
   $('input[name=duration]:radio').on('change', reload);
+  $('input[name=user_id]:radio').on('change', reload);
+  $('input[name=ego_surfing]:radio').on('change', reload);
   $('input[name=_action]:radio').on('change', reload);
   $('input[name=device_type]:radio').on('change', reload);
   $('input[name=channel]:radio').on('change', reload);
