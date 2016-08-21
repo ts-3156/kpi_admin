@@ -208,140 +208,6 @@ module KpiAdmin
         SQL
       end
 
-      def search_uu_per_device_type_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        device_type,
-        count(DISTINCT session_id) total
-      FROM background_search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-      GROUP BY device_type
-        SQL
-      end
-
-      def search_num_per_device_type_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        device_type,
-        count(*) total
-      FROM background_search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-      GROUP BY
-        device_type
-        SQL
-      end
-
-      def search_num_per_uu_per_device_type_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(b.session_id IS NULL, 'NULL', b.device_type) device_type,
-        if(count(a.session_id) = 0, 0, sum(b.count) / count(a.session_id)) rate
-      FROM (
-        SELECT DISTINCT
-          session_id
-        FROM search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-          #{optional_search_logs_conditions}
-      ) a LEFT OUTER JOIN (
-        SELECT
-          session_id,
-          device_type,
-          count(*) count
-        FROM background_search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-          #{optional_background_search_logs_conditions}
-        GROUP BY
-          session_id, device_type
-      ) b ON (a.session_id = b.session_id)
-      GROUP BY
-        device_type
-        SQL
-      end
-
-      def search_uu_per_channel_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(channel = '', 'NULL', channel) channel,
-        count(DISTINCT session_id) total
-      FROM background_search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-      GROUP BY channel
-        SQL
-      end
-
-      def search_num_per_channel_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(channel = '', 'NULL', channel) channel,
-        count(*) total
-      FROM background_search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-      GROUP BY
-        channel
-        SQL
-      end
-
-      def search_num_per_uu_per_channel_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(b.session_id IS NULL, 'NULL', b.channel) channel,
-        if(count(a.session_id) = 0, 0, sum(b.count) / count(a.session_id)) rate
-      FROM (
-        SELECT DISTINCT
-          session_id
-        FROM search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      ) a LEFT OUTER JOIN (
-        SELECT
-          session_id,
-          if(channel = '', 'NULL', channel) channel,
-          count(*) count
-        FROM background_search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-        GROUP BY
-          session_id, channel
-      ) b ON (a.session_id = b.session_id)
-      GROUP BY
-        channel
-        SQL
-      end
-
       %i(action device_type channel).each do |type|
         define_method("fetch_search_uu_per_#{type}") do
           result = exec_sql(BackgroundSearchLog, send("search_uu_per_#{type}_sql"))
@@ -374,6 +240,76 @@ module KpiAdmin
               visible: !legend.in?(%w(others))
             }
           end
+        end
+      end
+
+      %i(device_type channel).each do |type|
+        define_method("search_uu_per_#{type}_sql") do
+          <<-"SQL".strip_heredoc
+          SELECT
+            :label date,
+            #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+            count(DISTINCT session_id) total
+          FROM background_search_logs
+          WHERE
+            created_at BETWEEN :start AND :end
+            AND device_type NOT IN ('crawler', 'UNKNOWN')
+            #{optional_common_conditions}
+            #{optional_background_search_logs_conditions}
+          GROUP BY
+            #{type}
+          SQL
+        end
+
+        define_method("search_num_per_#{type}_sql") do
+          <<-"SQL".strip_heredoc
+          SELECT
+            :label date,
+            #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+            count(*) total
+          FROM background_search_logs
+          WHERE
+            created_at BETWEEN :start AND :end
+            AND device_type NOT IN ('crawler', 'UNKNOWN')
+            #{optional_common_conditions}
+            #{optional_background_search_logs_conditions}
+          GROUP BY
+            #{type}
+          SQL
+        end
+
+        define_method("search_num_per_uu_per_#{type}_sql") do
+          <<-"SQL".strip_heredoc
+          SELECT
+            :label date,
+            if(b.session_id IS NULL, 'NULL', b.#{type}) #{type},
+            if(count(a.session_id) = 0, 0, sum(b.count) / count(a.session_id)) rate
+          FROM (
+            SELECT DISTINCT
+              session_id
+            FROM search_logs
+            WHERE
+              created_at BETWEEN :start AND :end
+              AND device_type NOT IN ('crawler', 'UNKNOWN')
+              #{optional_common_conditions}
+              #{optional_search_logs_conditions}
+          ) a LEFT OUTER JOIN (
+            SELECT
+              session_id,
+              #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+              count(*) count
+            FROM background_search_logs
+            WHERE
+              created_at BETWEEN :start AND :end
+              AND device_type NOT IN ('crawler', 'UNKNOWN')
+              #{optional_common_conditions}
+              #{optional_background_search_logs_conditions}
+            GROUP BY
+              session_id, #{type}
+          ) b ON (a.session_id = b.session_id)
+          GROUP BY
+            #{type}
+          SQL
         end
       end
     end

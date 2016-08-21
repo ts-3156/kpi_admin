@@ -27,245 +27,153 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_uu_per_action
-        result = exec_sql(SearchLog, uu_per_action_sql)
-        result.map(&:action).sort.uniq.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: legend.in?(%w(new removing removed))
-          }
-        end
-      end
-
-      def uu_per_action_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        action,
-        count(DISTINCT session_id) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY action
-      ORDER BY action
-        SQL
-      end
-
-      def fetch_pv_per_action
-        result = exec_sql(SearchLog, pv_per_action_sql)
-        result.map { |r| r.action.to_s }.sort.uniq.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.action == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: legend.in?(%w(new removing removed))
-          }
-        end
-      end
-
-      def pv_per_action_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        action,
-        count(*) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        AND action != 'waiting'
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY action
-      ORDER BY action
-        SQL
-      end
-
-      def fetch_uu_per_device_type
-        result = exec_sql(SearchLog, uu_per_device_type_sql)
-        result.map(&:device_type).sort.uniq.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.device_type == legend }.map { |r| [to_msec_unixtime(r.date), r.total] }
-          }
-        end
-      end
-
-      def uu_per_device_type_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        device_type,
-        count(DISTINCT session_id) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY device_type
-      ORDER BY device_type
-        SQL
-      end
-
-      def fetch_pv_per_device_type
-        result = exec_sql(SearchLog, pv_per_device_type_sql)
-        result.map(&:device_type).sort.uniq.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.device_type == legend }.map { |r| [to_msec_unixtime(r.date), r.total] }
-          }
-        end
-      end
-
-      def pv_per_device_type_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        device_type,
-        count(*) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY device_type
-      ORDER BY device_type
-        SQL
-      end
-
       def fetch_uu_per_referer
         result = exec_sql(SearchLog, uu_per_referer_sql)
-        result.map(&:_referer).uniq.sort.map do |legend|
+        result.map(&:referer).reject { |r| r == 'NULL' }.uniq.sort.map do |legend|
           {
             name: legend,
-            data: result.select { |r| r._referer == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(others egotter))
+            data: result.select { |r| r.referer == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
+            visible: !legend.in?(%w(EGOTTER))
           }
         end
       end
 
       def uu_per_referer_sql
         <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        case
-          when referer regexp '^https?://(www\.)?egotter\.com' then 'egotter'
-          when referer regexp '^https?://(www\.)?google\.com' then 'google.com'
-          when referer regexp '^https?://(www\.)?google\.co\.jp' then 'google.co.jp'
-          when referer regexp '^https?://(www\.)?google\.co\.in' then 'google.co.in'
-          when referer regexp '^https?://search\.yahoo\.co\.jp' then 'search.yahoo.co.jp'
-          when referer regexp '^https?://matome\.naver\.jp/(m/)?odai/2136610523178627801$' then 'matome.naver.jp'
-          when referer regexp '^https?://((m|detail)\.)chiebukuro\.yahoo\.co\.jp' then 'chiebukuro.yahoo.co.jp'
-          else 'others'
-        end _referer,
-        count(DISTINCT session_id) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY _referer
-      ORDER BY _referer
+        SELECT
+          :label date,
+          case
+            when a._referer like '%egotter%' then 'EGOTTER'
+            when a._referer like '%google%' then 'GOOGLE'
+            when a._referer like '%yahoo%' then 'YAHOO'
+            when a._referer like '%naver%' then 'NAVER'
+            when a._referer regexp '(mobile\.)?twitter\.com|t\.co' then 'TWITTER'
+            else a._referer
+          end referer,
+          count(DISTINCT a.session_id) total
+        FROM (
+          SELECT DISTINCT
+            if(referer = '', 'NULL',
+              SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(referer, '/', 3), '://', -1), '/', 1), '?', 1)
+            ) _referer,
+            session_id
+          FROM search_logs
+          WHERE
+            created_at BETWEEN :start AND :end
+            AND device_type NOT IN ('crawler', 'UNKNOWN')
+            #{optional_common_conditions}
+            #{optional_search_logs_conditions}
+        ) a
+        GROUP BY
+          referer
         SQL
       end
 
       def fetch_pv_per_referer
         result = exec_sql(SearchLog, pv_per_referer_sql)
-        result.map(&:_referer).uniq.sort.map do |legend|
+        result.map(&:referer).reject { |r| r == 'NULL' }.uniq.sort.map do |legend|
           {
             name: legend,
-            data: result.select { |r| r._referer == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(others egotter))
+            data: result.select { |r| r.referer == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
+            visible: !legend.in?(%w(EGOTTER))
           }
         end
       end
 
       def pv_per_referer_sql
         <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        case
-          when referer regexp '^https?://(www\.)?egotter\.com' then 'egotter'
-          when referer regexp '^https?://(www\.)?google\.com' then 'google.com'
-          when referer regexp '^https?://(www\.)?google\.co\.jp' then 'google.co.jp'
-          when referer regexp '^https?://(www\.)?google\.co\.in' then 'google.co.in'
-          when referer regexp '^https?://search\.yahoo\.co\.jp' then 'search.yahoo.co.jp'
-          when referer regexp '^https?://matome\.naver\.jp/(m/)?odai/2136610523178627801$' then 'matome.naver.jp'
-          when referer regexp '^https?://((m|detail)\.)chiebukuro\.yahoo\.co\.jp' then 'chiebukuro.yahoo.co.jp'
-          else 'others'
-        end _referer,
-        count(*) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY _referer
-      ORDER BY _referer
+        SELECT
+          :label date,
+          case
+            when a._referer like '%egotter%' then 'EGOTTER'
+            when a._referer like '%google%' then 'GOOGLE'
+            when a._referer like '%yahoo%' then 'YAHOO'
+            when a._referer like '%naver%' then 'NAVER'
+            when a._referer regexp '(mobile\.)?twitter\.com|t\.co' then 'TWITTER'
+            else a._referer
+          end referer,
+          count(*) total
+        FROM (
+          SELECT
+            if(referer = '', 'NULL',
+              SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(referer, '/', 3), '://', -1), '/', 1), '?', 1)
+            ) _referer,
+            session_id
+          FROM search_logs
+          WHERE
+            created_at BETWEEN :start AND :end
+            AND device_type NOT IN ('crawler', 'UNKNOWN')
+            #{optional_common_conditions}
+            #{optional_search_logs_conditions}
+        ) a
+        GROUP BY
+          referer
         SQL
       end
 
-      def fetch_uu_per_channel
-        result = exec_sql(SearchLog, uu_per_channel_sql)
-        result.map(&:channel).uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.channel == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(blank))
-          }
+      %i(action device_type channel).each do |type|
+        is_visible = -> legend do
+          case type
+            when :action then %w(new removing removed).include?(legend)
+            when :referer then !%w(others egotter).include?(legend)
+            else true
+          end
         end
-      end
 
-      def uu_per_channel_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(channel = '', 'blank', channel) channel,
-        count(DISTINCT session_id) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY channel
-      ORDER BY channel
-        SQL
-      end
-
-      def fetch_pv_per_channel
-        result = exec_sql(SearchLog, pv_per_channel_sql)
-        result.map(&:channel).uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.channel == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(blank))
-          }
+        define_method("fetch_uu_per_#{type}") do
+          result = exec_sql(SearchLog, send("uu_per_#{type}_sql"))
+          result.map{|r| r.send(type) }.reject { |a| a == 'NULL' }.sort.uniq.map do |legend|
+            {
+              name: legend,
+              data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
+              visible: is_visible.call(legend)
+            }
+          end
         end
-      end
 
-      def pv_per_channel_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(channel = '', 'blank', channel) channel,
-        count(*) total
-      FROM search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_search_logs_conditions}
-      GROUP BY channel
-      ORDER BY channel
-        SQL
+        define_method("fetch_pv_per_#{type}") do
+          result = exec_sql(SearchLog, send("pv_per_#{type}_sql"))
+          result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.sort.uniq.map do |legend|
+            {
+              name: legend,
+              data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
+              visible: is_visible.call(legend)
+            }
+          end
+        end
+
+        define_method("uu_per_#{type}_sql") do
+          <<-"SQL".strip_heredoc
+            SELECT
+              :label date,
+              #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+              count(DISTINCT session_id) total
+            FROM search_logs
+            WHERE
+              created_at BETWEEN :start AND :end
+              AND device_type NOT IN ('crawler', 'UNKNOWN')
+              #{optional_common_conditions}
+              #{optional_search_logs_conditions}
+            GROUP BY #{type}
+          SQL
+        end
+
+        define_method("pv_per_#{type}_sql") do
+          <<-"SQL".strip_heredoc
+            SELECT
+              :label date,
+              #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+              count(*) total
+            FROM search_logs
+            WHERE
+              created_at BETWEEN :start AND :end
+              AND device_type NOT IN ('crawler', 'UNKNOWN')
+              AND action != 'waiting'
+              #{optional_common_conditions}
+              #{optional_search_logs_conditions}
+            GROUP BY #{type}
+          SQL
+        end
       end
 
       def fetch_new_user
