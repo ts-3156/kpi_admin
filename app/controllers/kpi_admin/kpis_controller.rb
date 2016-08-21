@@ -61,16 +61,14 @@ module KpiAdmin
       return render unless request.xhr?
 
       id_type = %w(user_id uid).include?(params[:id_type]) ? params[:id_type] : :session_id
-      date_index_max = [params[:date_index_max].to_i, 9].min
-      date_start_index = [params[:date_start_index].to_i, 0].max
-      date_end_index = [params[:date_end_index].to_i, date_index_max].min
-      y_index_range = date_start_index..date_end_index
-      yAxis_categories = (date_index_max + 1).times.map { |i| (now - i.days) }
-      xAxis_categories = (date_index_max + 1).times.to_a
+      y_index_max = params[:y_index_max].to_i
+      y_index = params[:y_index].to_i
+      yAxis_categories = (y_index_max + 1).times.map { |i| (now - i.days) }
+      xAxis_categories = (y_index_max + 1).times.to_a
       cells = {}
 
       yAxis_categories.each.with_index do |day, y|
-        next unless y_index_range.include?(y)
+        next if y_index != y
 
         ids = SearchLog.except_crawler.where(created_at: day.all_day).select(id_type).uniq.pluck(id_type)
         xAxis_categories.each do |x|
@@ -96,10 +94,8 @@ module KpiAdmin
         title: "RR(#{id_type}, #{format})",
         format: format,
         id_type: id_type,
-        sequence_number: params[:sequence_number].to_i,
-        date_index_max: date_index_max,
-        date_start_index: date_start_index,
-        date_end_index: date_end_index,
+        y_index_max: y_index_max,
+        y_index: y_index,
         xAxis_categories: xAxis_categories.dup,
         yAxis_categories: yAxis_categories.map { |d| d.to_date.strftime('%m/%d') },
         cells: cells.map { |(x, y), cell| [x, y, cell] }

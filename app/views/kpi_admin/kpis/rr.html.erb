@@ -56,7 +56,7 @@
   };
 
   var loading = $('.loading');
-  var chart = {
+  var charts = {
     number: $('.kpis.rr.number'),
     percentage: $('.kpis.rr.percentage')
   };
@@ -73,30 +73,29 @@
 
   function fetch(format) {
     var results = {};
-    var date_indices = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]];
-    var date_index_max = 9;
     var url = '<%= rr_path %>';
-    var params = $.map(date_indices, function (range, i) {
-      return {
+    var params = [];
+    for (var i = 0; i < 10; i++) {
+      params[i] = {
         id_type: $('input[name=id_type]:checked').val(),
-        date_start_index: range[0],
-        date_end_index: range[1],
-        date_index_max: date_index_max,
-        sequence_number: i,
+        y_index: i,
+        y_index_max: 9,
         format: format
       }
-    });
+    }
 
     function failed(xhr) {
       console.log(xhr.responseText);
       loading.hide();
-      chart[format].empty().text('error');
+      charts[format].empty().text('error');
     }
 
     function done(res) {
-      results[res.sequence_number] = res;
-      draw(res.xAxis_categories, res.yAxis_categories, all_cells(), res.title, chart[format]);
-      return $.get(url, params[res.sequence_number + 1])
+      results[res.y_index] = res;
+      draw(res.xAxis_categories, res.yAxis_categories, all_cells(), res.title, charts[format]);
+      if (params[res.y_index + 1]) {
+        return $.get(url, params[res.y_index + 1])
+      }
     }
 
     function all_cells() {
@@ -107,24 +106,24 @@
       return cells
     }
 
-    $.get(url, params[0])
+    return $.get(url, params[0])
         .then(done, failed)
         .then(done, failed)
         .then(done, failed)
         .then(done, failed)
-        .then(function (res) {
-          results[res.sequence_number] = res;
-          console.log(results);
-          draw(res.xAxis_categories, res.yAxis_categories, all_cells(), res.title, chart[format]);
-        }, failed);
+        .then(done, failed)
+        .then(done, failed)
+        .then(done, failed)
+        .then(done, failed)
+        .then(done, failed)
+        .then(done, failed); // 10, only draw
   }
 
   function reload() {
     loading.show();
-    $.each(['number', 'percentage'], function (i, format) {
-      chart[format].empty();
-      fetch(format);
-    });
+    charts['number'].empty();
+    charts['percentage'].empty();
+    fetch('number').then(function(){return fetch('percentage')});
   }
 
   $('input[name=id_type]:radio').on('change', reload);
