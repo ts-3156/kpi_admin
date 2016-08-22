@@ -196,28 +196,6 @@ module KpiAdmin
         created_at BETWEEN :start AND :end
         SQL
       end
-
-      def fetch_sign_in
-        result = exec_sql(SignInLog, sign_in_sql)
-        %i(NewUser ReturningUser).map do |legend|
-          {
-            name: legend,
-            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend)] }
-          }
-        end
-      end
-
-      def sign_in_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        count(if(context = 'create', 1, NULL)) 'NewUser',
-        count(if(context = 'update', 1, NULL)) 'ReturningUser'
-      FROM sign_in_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        SQL
-      end
     end
   end
 end

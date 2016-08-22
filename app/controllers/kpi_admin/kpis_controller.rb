@@ -6,13 +6,14 @@ module KpiAdmin
     include Kpis::DurationHelper
     include Kpis::PvUuHelper
     include Kpis::SearchCountHelper
+    include Kpis::SignInHelper
 
-    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchCountHelper.public_instance_methods
+    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchCountHelper.public_instance_methods + Kpis::SignInHelper.public_instance_methods
 
     def index
     end
 
-    %i(one two).each do |name|
+    %i(one two three).each do |name|
       define_method(name) do
         return render unless request.xhr?
 
@@ -38,6 +39,7 @@ module KpiAdmin
           render json: result, status: 200
         rescue => e
           logger.warn "#{self.class}##{__method__}: #{e.class} #{e.message}"
+          logger.warn e.backtrace.join("\n")
           render json: {message: e.message}, status: 500
         end
       end

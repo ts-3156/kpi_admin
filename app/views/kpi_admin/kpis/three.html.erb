@@ -1,0 +1,53 @@
+<%= render partial: 'selector' %>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
+
+<div class="row">
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis sign_in_uu"></div>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis sign_in_num"></div>
+  </div>
+
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis welcome_to_login_uu"></div>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis welcome_to_login_ctr_cvr"></div>
+  </div>
+</div>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default') %></div>
+
+<script>
+  function reload() {
+    $('.loading').show();
+    $('.kpis').empty();
+    $.each(charts, function (_, chart) {
+      chart.destroy();
+    });
+    charts = {};
+
+    var url = "<%= one_path %>";
+    var types = [
+      'sign_in_uu',
+      'sign_in_num',
+      'welcome_to_login_uu',
+      'welcome_to_login_ctr_cvr'
+    ];
+    fetch(url, types[0])
+        .then(function(){return fetch(url, types[1])})
+        .then(function(){return fetch(url, types[2])})
+        .then(function(){return fetch(url, types[3])});
+  }
+
+  $(function () {
+    after_load();
+    reload();
+  });
+</script>
