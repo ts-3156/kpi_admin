@@ -79,7 +79,8 @@ function params(type, sequence_number) {
     status: $('input[name=status]:checked').val(),
     auto: $('input[name=auto]:checked').val(),
     device_type: $('input[name=device_type]:checked').val(),
-    channel: $('input[name=channel]:checked').val()
+    channel: $('input[name=channel]:checked').val(),
+    context: $('input[name=context]:checked').val()
   }
 }
 
@@ -155,4 +156,5 @@ function after_load() {
   $('input[name=auto]:radio').on('change', reload);
   $('input[name=device_type]:radio').on('change', reload);
   $('input[name=channel]:radio').on('change', reload);
+  $('input[name=context]:radio').on('change', reload);
 }

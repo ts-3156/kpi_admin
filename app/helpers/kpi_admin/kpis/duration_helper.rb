@@ -86,6 +86,10 @@ module KpiAdmin
         params[:channel] && params[:channel] != '' ? params[:channel] : nil
       end
 
+      def context_values
+        params[:context] && params[:context] != '' ? Array.wrap("'#{params[:context]}'") : nil
+      end
+
       private
 
       def apply_frequency(days)

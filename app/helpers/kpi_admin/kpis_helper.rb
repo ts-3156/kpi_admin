@@ -38,6 +38,12 @@ module KpiAdmin
       STR
     end
 
+    def optional_sign_in_logs_conditions
+      <<-"STR".strip_heredoc
+      #{context_values ? "AND context IN (#{context_values.join(',')})" : ''}
+      STR
+    end
+
     def placeholder_values(days)
       {
         start: days.first.beginning_of_day,
