@@ -1,3 +1,6 @@
+<button class="btn btn-default" type="button" data-toggle="collapse" data-target=".advanced-options">Advanced Options</button>
+
+<div class="collapse advanced-options">
 <div class="well">
   <h5>Clock</h5>
   <%= render partial: 'clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
@@ -22,4 +25,5 @@
 
   <h5>SignInLog</h5>
   <%= render partial: 'context' %>
+</div>
 </div>
