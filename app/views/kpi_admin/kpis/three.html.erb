@@ -66,12 +66,7 @@
 
 <script>
   function reload() {
-    $('.loading').show();
-    $('.kpis').empty();
-    $.each(charts, function (_, chart) {
-      chart.destroy();
-    });
-    charts = {};
+    before_reload();
 
     var url = "<%= one_path %>";
     var types = [

@@ -3,9 +3,13 @@
 <div><%= link_to('KPIs', root_path, class: 'btn btn-default btn-lg') %></div>
 
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis uu"></div>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis pv"></div>
   </div>
 
   <div class="col-xs-12"><h3>Per action</h3></div>
@@ -57,16 +61,12 @@
 
 <script>
   function reload() {
-    $('.loading').show();
-    $('.kpis').empty();
-    $.each(charts, function (_, chart) {
-      chart.destroy();
-    });
-    charts = {};
+    before_reload();
 
     var url = "<%= one_path %>";
     var types = [
       'uu',
+      'pv',
       'uu_per_device_type',
       'pv_per_device_type',
       'uu_per_unified_referer',
@@ -79,15 +79,17 @@
       'pv_per_action'
     ];
 
-    fetch(url, types[0])
+    $.Deferred().resolve()
+        .then(function(){return fetch(url, types[0])})
+        .then(function(){return fetch(url, types[1])})
         .then(function(){return fetch(url, types_stacked[0], true)})
         .then(function(){return fetch(url, types_stacked[1], true)})
-        .then(function(){return fetch(url, types[1])})
         .then(function(){return fetch(url, types[2])})
         .then(function(){return fetch(url, types[3])})
         .then(function(){return fetch(url, types[4])})
         .then(function(){return fetch(url, types[5])})
-        .then(function(){return fetch(url, types[6])});
+        .then(function(){return fetch(url, types[6])})
+        .then(function(){return fetch(url, types[7])});
   }
 
   $(function () {

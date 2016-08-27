@@ -158,3 +158,12 @@ function after_load() {
   $('input[name=channel]:radio').on('change', reload);
   $('input[name=context]:radio').on('change', reload);
 }
+
+function before_reload() {
+  $('.loading').show();
+  $('.kpis').empty();
+  $.each(charts, function (_, chart) {
+    chart.destroy();
+  });
+  charts = {};
+}

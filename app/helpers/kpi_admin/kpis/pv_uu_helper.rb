@@ -18,7 +18,33 @@ module KpiAdmin
         count(DISTINCT session_id) total,
         count(DISTINCT if(user_id = -1, session_id, NULL)) guest,
         count(DISTINCT if(user_id != -1, session_id, NULL)) login
-      FROM search_logs
+      FROM tmp_search_logs
+      WHERE
+        created_at BETWEEN :start AND :end
+        AND device_type NOT IN ('crawler', 'UNKNOWN')
+        #{optional_common_conditions}
+        #{optional_search_logs_conditions}
+        SQL
+      end
+
+      def fetch_pv
+        result = exec_sql(SearchLog, pv_sql)
+        %i(total guest login).map do |legend|
+          {
+            name: legend,
+            data: result.map { |r| [to_msec_unixtime(r.date), r.send(legend)] }
+          }
+        end
+      end
+
+      def pv_sql
+        <<-"SQL".strip_heredoc
+      SELECT
+        :label date,
+        count(*) total,
+        count(if(user_id = -1, 1, NULL)) guest,
+        count(if(user_id != -1, 1, NULL)) login
+      FROM tmp_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
