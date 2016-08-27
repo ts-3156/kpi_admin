@@ -6,6 +6,7 @@ PATH
       haml-rails
       jquery-rails
       rails (~> 4.2.5)
+      rake
 
 GEM
   remote: https://rubygems.org/
