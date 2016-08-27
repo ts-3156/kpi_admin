@@ -46,19 +46,34 @@
     <div class="kpis search_num_per_uu_per_device_type"></div>
   </div>
 
-  <div class="col-xs-12"><h3>Per channel</h3></div>
+  <div class="col-xs-12"><h3>Per unified_referer</h3></div>
 
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_uu_per_channel"></div>
+    <div class="kpis search_uu_per_unified_referer"></div>
   </div>
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_num_per_channel"></div>
+    <div class="kpis search_num_per_unified_referer"></div>
   </div>
   <div class="col-xs-12 col-sm-4">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis search_num_per_uu_per_channel"></div>
+    <div class="kpis search_num_per_uu_per_unified_referer"></div>
+  </div>
+
+  <div class="col-xs-12"><h3>Per unified_channel</h3></div>
+
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_uu_per_unified_channel"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_num_per_unified_channel"></div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis search_num_per_uu_per_unified_channel"></div>
   </div>
 
   <div class="col-xs-12"><h3>Per via</h3></div>
@@ -99,9 +114,12 @@
       'search_uu_per_device_type',
       'search_num_per_device_type',
       'search_num_per_uu_per_device_type',
-      'search_uu_per_channel',
-      'search_num_per_channel',
-      'search_num_per_uu_per_channel',
+      'search_uu_per_unified_referer',
+      'search_num_per_unified_referer',
+      'search_num_per_uu_per_unified_referer',
+      'search_uu_per_unified_channel',
+      'search_num_per_unified_channel',
+      'search_num_per_uu_per_unified_channel',
       'search_uu_per_via',
       'search_num_per_via',
       'search_num_per_uu_per_via'
@@ -120,7 +138,10 @@
         .then(function(){return fetch(url, types[11])})
         .then(function(){return fetch(url, types[12])})
         .then(function(){return fetch(url, types[13])})
-        .then(function(){return fetch(url, types[14])});
+        .then(function(){return fetch(url, types[14])})
+        .then(function(){return fetch(url, types[15])})
+        .then(function(){return fetch(url, types[16])})
+        .then(function(){return fetch(url, types[17])});
   }
 
   $(function () {

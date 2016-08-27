@@ -30,26 +30,26 @@
     <div class="kpis pv_per_device_type"></div>
   </div>
 
-  <div class="col-xs-12"><h3>Per referer</h3></div>
+  <div class="col-xs-12"><h3>Per unified_referer</h3></div>
 
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis uu_per_referer"></div>
+    <div class="kpis uu_per_unified_referer"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis pv_per_referer"></div>
+    <div class="kpis pv_per_unified_referer"></div>
   </div>
 
-  <div class="col-xs-12"><h3>Per channel</h3></div>
+  <div class="col-xs-12"><h3>Per unified_channel</h3></div>
 
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis uu_per_channel"></div>
+    <div class="kpis uu_per_unified_channel"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis pv_per_channel"></div>
+    <div class="kpis pv_per_unified_channel"></div>
   </div>
 </div>
 
@@ -69,10 +69,10 @@
       'uu',
       'uu_per_device_type',
       'pv_per_device_type',
-      'uu_per_referer',
-      'pv_per_referer',
-      'uu_per_channel',
-      'pv_per_channel'
+      'uu_per_unified_referer',
+      'pv_per_unified_referer',
+      'uu_per_unified_channel',
+      'pv_per_unified_channel'
     ];
     var types_stacked = [
       'uu_per_action',

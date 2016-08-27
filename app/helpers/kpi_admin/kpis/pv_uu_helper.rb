@@ -27,95 +27,11 @@ module KpiAdmin
         SQL
       end
 
-      def fetch_uu_per_referer
-        result = exec_sql(SearchLog, uu_per_referer_sql)
-        result.map(&:referer).reject { |r| r == 'NULL' }.uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.referer == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(EGOTTER))
-          }
-        end
-      end
-
-      def uu_per_referer_sql
-        <<-"SQL".strip_heredoc
-        SELECT
-          :label date,
-          case
-            when a._referer like '%egotter%' then 'EGOTTER'
-            when a._referer like '%google%' then 'GOOGLE'
-            when a._referer like '%yahoo%' then 'YAHOO'
-            when a._referer like '%naver%' then 'NAVER'
-            when a._referer regexp '(mobile\.)?twitter\.com|t\.co' then 'TWITTER'
-            else a._referer
-          end referer,
-          count(DISTINCT a.session_id) total
-        FROM (
-          SELECT DISTINCT
-            if(referer = '', 'NULL',
-              SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(referer, '/', 3), '://', -1), '/', 1), '?', 1)
-            ) _referer,
-            session_id
-          FROM search_logs
-          WHERE
-            created_at BETWEEN :start AND :end
-            AND device_type NOT IN ('crawler', 'UNKNOWN')
-            #{optional_common_conditions}
-            #{optional_search_logs_conditions}
-        ) a
-        GROUP BY
-          referer
-        SQL
-      end
-
-      def fetch_pv_per_referer
-        result = exec_sql(SearchLog, pv_per_referer_sql)
-        result.map(&:referer).reject { |r| r == 'NULL' }.uniq.sort.map do |legend|
-          {
-            name: legend,
-            data: result.select { |r| r.referer == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-            visible: !legend.in?(%w(EGOTTER))
-          }
-        end
-      end
-
-      def pv_per_referer_sql
-        <<-"SQL".strip_heredoc
-        SELECT
-          :label date,
-          case
-            when a._referer like '%egotter%' then 'EGOTTER'
-            when a._referer like '%google%' then 'GOOGLE'
-            when a._referer like '%yahoo%' then 'YAHOO'
-            when a._referer like '%naver%' then 'NAVER'
-            when a._referer regexp '(mobile\.)?twitter\.com|t\.co' then 'TWITTER'
-            else a._referer
-          end referer,
-          count(*) total
-        FROM (
-          SELECT
-            if(referer = '', 'NULL',
-              SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(referer, '/', 3), '://', -1), '/', 1), '?', 1)
-            ) _referer,
-            session_id
-          FROM search_logs
-          WHERE
-            created_at BETWEEN :start AND :end
-            AND device_type NOT IN ('crawler', 'UNKNOWN')
-            #{optional_common_conditions}
-            #{optional_search_logs_conditions}
-        ) a
-        GROUP BY
-          referer
-        SQL
-      end
-
-      %i(action device_type channel).each do |type|
+      %i(action device_type referer unified_referer channel unified_channel).each do |type|
         is_visible = -> legend do
           case type
             when :action then %w(new removing removed).include?(legend)
-            when :referer then !%w(others egotter).include?(legend)
+            when :unified_referer then %w(EGOTTER).exclude?(legend)
             else true
           end
         end
@@ -146,9 +62,9 @@ module KpiAdmin
           <<-"SQL".strip_heredoc
             SELECT
               :label date,
-              #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+              #{type},
               count(DISTINCT session_id) total
-            FROM search_logs
+            FROM tmp_search_logs
             WHERE
               created_at BETWEEN :start AND :end
               AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -162,9 +78,9 @@ module KpiAdmin
           <<-"SQL".strip_heredoc
             SELECT
               :label date,
-              #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+              #{type},
               count(*) total
-            FROM search_logs
+            FROM tmp_search_logs
             WHERE
               created_at BETWEEN :start AND :end
               AND device_type NOT IN ('crawler', 'UNKNOWN')

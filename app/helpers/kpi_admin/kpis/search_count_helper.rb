@@ -18,7 +18,7 @@ module KpiAdmin
         count(DISTINCT session_id) total,
         count(DISTINCT if(user_id = -1, session_id, NULL)) guest,
         count(DISTINCT if(user_id != -1, session_id, NULL)) login
-      FROM search_logs
+      FROM tmp_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -44,7 +44,7 @@ module KpiAdmin
         :label date,
         count(if(user_id = -1, 1, NULL)) guest,
         count(if(user_id != -1, 1, NULL)) login
-      FROM search_logs
+      FROM tmp_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -70,7 +70,7 @@ module KpiAdmin
         :label date,
         count(if(user_id = -1, 1, NULL)) guest_verif,
         count(if(user_id != -1, 1, NULL)) login_verif
-      FROM background_search_logs
+      FROM tmp_background_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -100,7 +100,7 @@ module KpiAdmin
           session_id,
           count(DISTINCT if(user_id = -1, session_id, NULL)) guest_uu,
           count(DISTINCT if(user_id != -1, session_id, NULL)) login_uu
-        FROM search_logs
+        FROM tmp_search_logs
         WHERE
           created_at BETWEEN :start AND :end
           AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -113,7 +113,7 @@ module KpiAdmin
           session_id,
           count(if(user_id = -1, 1, NULL)) guest_num,
           count(if(user_id != -1, 1, NULL)) login_num
-        FROM background_search_logs
+        FROM tmp_background_search_logs
         WHERE
           created_at BETWEEN :start AND :end
           AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -136,7 +136,7 @@ module KpiAdmin
           ELSE 'others'
         END action,
         count(DISTINCT session_id) total
-      FROM background_search_logs
+      FROM tmp_background_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -158,7 +158,7 @@ module KpiAdmin
           ELSE 'others'
         END action,
         count(*) total
-      FROM background_search_logs
+      FROM tmp_background_search_logs
       WHERE
         created_at BETWEEN :start AND :end
         AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -178,7 +178,7 @@ module KpiAdmin
       FROM (
         SELECT DISTINCT
           session_id
-        FROM search_logs
+        FROM tmp_search_logs
         WHERE
           created_at BETWEEN :start AND :end
           AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -194,7 +194,7 @@ module KpiAdmin
             ELSE 'others'
           END action,
           count(*) count
-        FROM background_search_logs
+        FROM tmp_background_search_logs
         WHERE
           created_at BETWEEN :start AND :end
           AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -208,7 +208,7 @@ module KpiAdmin
         SQL
       end
 
-      %i(action device_type channel via).each do |type|
+      %i(action device_type referer unified_referer channel unified_channel via).each do |type|
         define_method("fetch_search_uu_per_#{type}") do
           result = exec_sql(BackgroundSearchLog, send("search_uu_per_#{type}_sql"))
           result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
@@ -233,7 +233,7 @@ module KpiAdmin
 
         define_method("fetch_search_num_per_uu_per_#{type}") do
           result = exec_sql(BackgroundSearchLog, send("search_num_per_uu_per_#{type}_sql"))
-          result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
+          result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.compact.uniq.sort.map do |legend|
             {
               name: legend,
               data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.rate.to_f] },
@@ -243,14 +243,14 @@ module KpiAdmin
         end
       end
 
-      %i(device_type channel via).each do |type|
+      %i(device_type referer unified_referer channel unified_channel via).each do |type|
         define_method("search_uu_per_#{type}_sql") do
           <<-"SQL".strip_heredoc
           SELECT
             :label date,
-            if(#{type} = '', 'NULL', #{type}) #{type},
+            #{type},
             count(DISTINCT session_id) total
-          FROM background_search_logs
+          FROM tmp_background_search_logs
           WHERE
             created_at BETWEEN :start AND :end
             AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -265,9 +265,9 @@ module KpiAdmin
           <<-"SQL".strip_heredoc
           SELECT
             :label date,
-            if(#{type} = '', 'NULL', #{type}) #{type},
+            #{type},
             count(*) total
-          FROM background_search_logs
+          FROM tmp_background_search_logs
           WHERE
             created_at BETWEEN :start AND :end
             AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -282,12 +282,12 @@ module KpiAdmin
           <<-"SQL".strip_heredoc
           SELECT
             :label date,
-            if(b.session_id IS NULL, 'NULL', b.#{type}) #{type},
+            #{type},
             if(count(a.session_id) = 0, 0, sum(b.count) / count(a.session_id)) rate
           FROM (
             SELECT DISTINCT
               session_id
-            FROM search_logs
+            FROM tmp_search_logs
             WHERE
               created_at BETWEEN :start AND :end
               AND device_type NOT IN ('crawler', 'UNKNOWN')
@@ -296,9 +296,9 @@ module KpiAdmin
           ) a LEFT OUTER JOIN (
             SELECT
               session_id,
-              if(#{type} = '', 'NULL', #{type}) #{type},
+              #{type},
               count(*) count
-            FROM background_search_logs
+            FROM tmp_background_search_logs
             WHERE
               created_at BETWEEN :start AND :end
               AND device_type NOT IN ('crawler', 'UNKNOWN')
