@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency "activesupport"
   s.add_dependency "jquery-rails"
   s.add_dependency "haml-rails"
-  s.add_dependency "rake"
 
   s.add_development_dependency "mysql2"
 end
