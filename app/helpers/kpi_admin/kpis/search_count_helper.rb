@@ -125,97 +125,21 @@ module KpiAdmin
         SQL
       end
 
-      def search_uu_per_action_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        CASE
-          WHEN referer regexp '^http://(www\.)?egotter\.com/?$' THEN 'new'
-          WHEN referer regexp '^http://(www\.)?egotter\.com/searches' THEN 'results'
-          WHEN referer = '' THEN 'direct'
-          ELSE 'others'
-        END action,
-        count(DISTINCT session_id) total
-      FROM tmp_background_search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-      GROUP BY
-        action
-        SQL
-      end
+      %i(extracted_action device_type referer unified_referer channel unified_channel via).each do |type|
+        is_visible = -> legend do
+          case type
+            when :extracted_action then %w(new show).include?(legend)
+            else true
+          end
+        end
 
-      def search_num_per_action_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        CASE
-          WHEN referer regexp '^http://(www\.)?egotter\.com/?$' THEN 'new'
-          WHEN referer regexp '^http://(www\.)?egotter\.com/searches' THEN 'results'
-          WHEN referer = '' THEN 'direct'
-          ELSE 'others'
-        END action,
-        count(*) total
-      FROM tmp_background_search_logs
-      WHERE
-        created_at BETWEEN :start AND :end
-        AND device_type NOT IN ('crawler', 'UNKNOWN')
-        #{optional_common_conditions}
-        #{optional_background_search_logs_conditions}
-      GROUP BY
-        action
-        SQL
-      end
-
-      def search_num_per_uu_per_action_sql
-        <<-"SQL".strip_heredoc
-      SELECT
-        :label date,
-        if(b.session_id IS NULL, 'NULL', b.action) action,
-        if(count(a.session_id) = 0, 0, sum(b.count) / count(a.session_id)) rate
-      FROM (
-        SELECT DISTINCT
-          session_id
-        FROM tmp_search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-          #{optional_search_logs_conditions}
-      ) a LEFT OUTER JOIN (
-        SELECT
-          session_id,
-          CASE
-            WHEN referer regexp '^http://(www\.)?egotter\.com/?$' THEN 'new'
-            WHEN referer regexp '^http://(www\.)?egotter\.com/searches' THEN 'results'
-            WHEN referer = '' THEN 'direct'
-            ELSE 'others'
-          END action,
-          count(*) count
-        FROM tmp_background_search_logs
-        WHERE
-          created_at BETWEEN :start AND :end
-          AND device_type NOT IN ('crawler', 'UNKNOWN')
-          #{optional_common_conditions}
-          #{optional_background_search_logs_conditions}
-        GROUP BY
-          session_id, action
-      ) b ON (a.session_id = b.session_id)
-      GROUP BY
-        action
-        SQL
-      end
-
-      %i(action device_type referer unified_referer channel unified_channel via).each do |type|
         define_method("fetch_search_uu_per_#{type}") do
           result = exec_sql(BackgroundSearchLog, send("search_uu_per_#{type}_sql"))
           result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
             {
               name: legend,
               data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-              visible: !legend.in?(%w(others))
+              visible: is_visible.call(legend)
             }
           end
         end
@@ -226,7 +150,7 @@ module KpiAdmin
             {
               name: legend,
               data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.total] },
-              visible: !legend.in?(%w(others))
+              visible: is_visible.call(legend)
             }
           end
         end
@@ -237,13 +161,11 @@ module KpiAdmin
             {
               name: legend,
               data: result.select { |r| r.send(type) == legend }.map { |r| [to_msec_unixtime(r.date), r.rate.to_f] },
-              visible: !legend.in?(%w(others))
+              visible: is_visible.call(legend)
             }
           end
         end
-      end
 
-      %i(device_type referer unified_referer channel unified_channel via).each do |type|
         define_method("search_uu_per_#{type}_sql") do
           <<-"SQL".strip_heredoc
           SELECT

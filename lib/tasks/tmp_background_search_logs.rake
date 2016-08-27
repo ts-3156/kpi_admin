@@ -5,6 +5,7 @@ namespace :tmp_background_search_logs do
     ActiveRecord::Base.connection.execute('CREATE TABLE tmp_background_search_logs LIKE background_search_logs')
     ActiveRecord::Base.connection.execute('ALTER TABLE tmp_background_search_logs CHANGE id id INT(11) NOT NULL')
     ActiveRecord::Base.connection.execute("ALTER TABLE tmp_background_search_logs ADD unified_referer varchar(191) not null default '' after referer")
+    ActiveRecord::Base.connection.execute("ALTER TABLE tmp_background_search_logs ADD extracted_action varchar(191) not null default '' after unified_referer")
     ActiveRecord::Base.connection.execute("ALTER TABLE tmp_background_search_logs ADD unified_channel varchar(191) not null default '' after channel")
   end
 
@@ -53,6 +54,13 @@ def import_tmp_background_search_logs_sql
           when b.referer regexp '(mobile\.)?twitter\.com|t\.co' then 'TWITTER'
           else b.referer
         end unified_referer,
+        case
+          when b.referer_path IN ('', '/') then 'new'
+          when b.referer_path regexp '^/searches/[0-9]+' then 'show'
+          when b.referer_path regexp '^/[a-z]+$' then SUBSTRING_INDEX(b.referer_path, '/', -1)
+          when b.referer_path regexp '^/[a-zA-Z0-9]+' then SUBSTRING_INDEX(SUBSTRING_INDEX(b.referer_path, '?', 1), '/', -1)
+          else 'NULL'
+        end extracted_action,
         a.channel,
         case
         when b.channel like '%egotter%' then 'EGOTTER'
@@ -66,6 +74,7 @@ def import_tmp_background_search_logs_sql
       FROM background_search_logs a JOIN (
         SELECT
           id,
+          if(referer NOT regexp '^https?://(www\.)?egotter\.com', 'NULL', SUBSTRING_INDEX(referer, 'egotter.com', -1)) referer_path,
           if(referer = '', 'NULL',
              SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(referer, '/', 3), '://', -1), '/', 1), '?', 1)
           ) referer,
