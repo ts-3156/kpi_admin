@@ -1,0 +1,29 @@
+<button class="btn btn-default btn-lg" type="button" data-toggle="collapse" data-target=".advanced-options">Advanced Options</button>
+
+<div class="collapse advanced-options">
+<div class="well">
+  <h5>Clock</h5>
+  <%= render partial: 'kpi_admin/common/clock', locals: {now: now, date_start: date_start, date_end: date_end} %>
+
+  <h5>General</h5>
+  <%= render partial: 'kpi_admin/common/time_zone' %>
+  <%= render partial: 'kpi_admin/common/frequency' %>
+  <%= render partial: 'kpi_admin/common/duration' %>
+
+  <h5>Common</h5>
+  <%= render partial: 'kpi_admin/common/user_id' %>
+  <%= render partial: 'kpi_admin/common/device_type' %>
+  <%= render partial: 'kpi_admin/common/channel' %>
+
+  <h5>SearchLog</h5>
+  <%= render partial: 'kpi_admin/search_logs/ego_surfing' %>
+  <%= render partial: 'kpi_admin/search_logs/action' %>
+
+  <h5>BackgroundSearchLog</h5>
+  <%= render partial: 'kpi_admin/background_search_logs/status' %>
+  <%= render partial: 'kpi_admin/background_search_logs/auto' %>
+
+  <h5>SignInLog</h5>
+  <%= render partial: 'kpi_admin/sign_in_logs/context' %>
+</div>
+</div>
