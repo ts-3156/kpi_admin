@@ -90,6 +90,10 @@ module KpiAdmin
         params[:context] && params[:context] != '' ? Array.wrap("'#{params[:context]}'") : nil
       end
 
+      def name_values
+        params[:name] && params[:name] != '' ? Array.wrap("'#{params[:name]}'") : nil
+      end
+
       private
 
       def apply_frequency(days)

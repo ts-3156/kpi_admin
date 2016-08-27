@@ -44,6 +44,12 @@ module KpiAdmin
       STR
     end
 
+    def optional_modal_open_logs_conditions
+      <<-"STR".strip_heredoc
+      #{name_values ? "AND name IN (#{name_values.join(',')})" : ''}
+      STR
+    end
+
     def placeholder_values(days)
       {
         start: days.first.beginning_of_day,

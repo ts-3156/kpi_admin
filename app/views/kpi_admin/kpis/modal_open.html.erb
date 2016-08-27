@@ -1,0 +1,56 @@
+<%= render partial: 'kpi_admin/common/selector' %>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default btn-lg') %></div>
+
+<div class="row">
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis modal_open_uu"></div>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis modal_open_num"></div>
+  </div>
+
+  <div class="col-xs-12"><h3>Per device_type</h3></div>
+
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis modal_open_uu_per_device_type"></div>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
+    <div class="kpis modal_open_num_per_device_type"></div>
+  </div>
+</div>
+
+<div><%= link_to('KPIs', root_path, class: 'btn btn-default btn-lg') %></div>
+
+<script>
+  function reload() {
+    before_reload();
+
+    var url = "<%= pv_uu_path %>";
+    var types = [
+      'modal_open_uu',
+      'modal_open_num',
+      'modal_open_uu_per_device_type',
+      'modal_open_num_per_device_type',
+      'modal_open_uu_per_unified_referer',
+      'modal_open_num_per_unified_referer',
+      'modal_open_uu_per_unified_channel',
+      'modal_open_num_per_unified_channel'
+    ];
+
+    $.Deferred().resolve()
+        .then(function(){return fetch(url, types[0])})
+        .then(function(){return fetch(url, types[1])})
+        .then(function(){return fetch(url, types[2])})
+        .then(function(){return fetch(url, types[3])});
+  }
+
+  $(function () {
+    after_load();
+    reload();
+  });
+</script>

@@ -7,18 +7,24 @@ module KpiAdmin
     include Kpis::PvUuHelper
     include Kpis::SearchNumHelper
     include Kpis::SignInHelper
+    include Kpis::ModalOpenHelper
 
-    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchNumHelper.public_instance_methods + Kpis::SignInHelper.public_instance_methods
+    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods +
+      Kpis::SearchNumHelper.public_instance_methods +
+      Kpis::SignInHelper.public_instance_methods +
+      Kpis::ModalOpenHelper.public_instance_methods
+
 
     def index
     end
 
-    %i(pv_uu search_num sign_in).each do |name|
+    %i(pv_uu search_num sign_in modal_open).each do |name|
       define_method(name) do
         return render unless request.xhr?
 
         begin
-          type = METHOD_TYPES.include?("fetch_#{params[:type]}".to_sym) ? params[:type] : 'uu'
+          raise "invalid type: #{params[:type]}" if METHOD_TYPES.exclude?("fetch_#{params[:type]}".to_sym)
+          type = params[:type]
           result = {
             type: type,
             type => send("fetch_#{type}"),
