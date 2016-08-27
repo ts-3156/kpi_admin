@@ -208,7 +208,7 @@ module KpiAdmin
         SQL
       end
 
-      %i(action device_type channel).each do |type|
+      %i(action device_type channel via).each do |type|
         define_method("fetch_search_uu_per_#{type}") do
           result = exec_sql(BackgroundSearchLog, send("search_uu_per_#{type}_sql"))
           result.map { |r| r.send(type) }.reject { |a| a == 'NULL' }.uniq.sort.map do |legend|
@@ -243,12 +243,12 @@ module KpiAdmin
         end
       end
 
-      %i(device_type channel).each do |type|
+      %i(device_type channel via).each do |type|
         define_method("search_uu_per_#{type}_sql") do
           <<-"SQL".strip_heredoc
           SELECT
             :label date,
-            #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+            if(#{type} = '', 'NULL', #{type}) #{type},
             count(DISTINCT session_id) total
           FROM background_search_logs
           WHERE
@@ -265,7 +265,7 @@ module KpiAdmin
           <<-"SQL".strip_heredoc
           SELECT
             :label date,
-            #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+            if(#{type} = '', 'NULL', #{type}) #{type},
             count(*) total
           FROM background_search_logs
           WHERE
@@ -296,7 +296,7 @@ module KpiAdmin
           ) a LEFT OUTER JOIN (
             SELECT
               session_id,
-              #{type == :channel ? "if(channel = '', 'NULL', channel) channel" : type},
+              if(#{type} = '', 'NULL', #{type}) #{type},
               count(*) count
             FROM background_search_logs
             WHERE
