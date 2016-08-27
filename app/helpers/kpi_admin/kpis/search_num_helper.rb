@@ -1,6 +1,6 @@
 module KpiAdmin
   module Kpis
-    module SearchCountHelper
+    module SearchNumHelper
       def fetch_search_uu
         result = exec_sql(SearchLog, search_uu_sql)
         %i(total guest login).map do |legend|

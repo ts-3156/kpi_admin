@@ -5,15 +5,15 @@ module KpiAdmin
     include KpisHelper
     include Kpis::DurationHelper
     include Kpis::PvUuHelper
-    include Kpis::SearchCountHelper
+    include Kpis::SearchNumHelper
     include Kpis::SignInHelper
 
-    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchCountHelper.public_instance_methods + Kpis::SignInHelper.public_instance_methods
+    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods + Kpis::SearchNumHelper.public_instance_methods + Kpis::SignInHelper.public_instance_methods
 
     def index
     end
 
-    %i(one two three).each do |name|
+    %i(pv_uu search_num sign_in).each do |name|
       define_method(name) do
         return render unless request.xhr?
 

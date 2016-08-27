@@ -4,25 +4,25 @@
   <div class="col-xs-12">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis uu"></div>
-    <div><%= link_to('PV / UU', one_path, class: 'btn btn-default btn-lg') %></div>
+    <div><%= link_to('PV / UU', pv_uu_path, class: 'btn btn-default btn-lg') %></div>
   </div>
 
   <div class="col-xs-12">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis search_num"></div>
-    <div><%= link_to('Search num', two_path, class: 'btn btn-default btn-lg') %></div>
+    <div><%= link_to('Search num', search_num_path, class: 'btn btn-default btn-lg') %></div>
   </div>
 
   <div class="col-xs-12">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis sign_in_num"></div>
-    <div><%= link_to('Sign in', three_path, class: 'btn btn-default btn-lg') %></div>
+    <div><%= link_to('Sign in', sign_in_path, class: 'btn btn-default btn-lg') %></div>
   </div>
 
   <div class="col-xs-12">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
     <div class="kpis new_user"></div>
-    <div><%= link_to('New user', one_path, class: 'btn btn-default btn-lg') %></div>
+    <div><%= link_to('New user', pv_uu_path, class: 'btn btn-default btn-lg') %></div>
   </div>
 
   <div class="col-xs-12">
@@ -41,7 +41,7 @@
     });
     charts = {};
 
-    var url = "<%= one_path %>";
+    var url = "<%= pv_uu_path %>";
     fetch(url, 'uu')
         .then(function(){return fetch(url, 'search_num')})
         .then(function(){return fetch(url, 'new_user')})

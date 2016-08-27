@@ -5,60 +5,55 @@
 <div class="row">
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis sign_in_uu"></div>
+    <div class="kpis uu"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis sign_in_num"></div>
+    <div class="kpis pv"></div>
   </div>
+
+  <div class="col-xs-12"><h3>Per action</h3></div>
 
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis welcome_to_login_uu"></div>
+    <div class="kpis uu_per_action"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis welcome_to_login_ctr_cvr"></div>
+    <div class="kpis pv_per_action"></div>
   </div>
 
   <div class="col-xs-12"><h3>Per device_type</h3></div>
 
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis sign_in_uu_per_device_type"></div>
+    <div class="kpis uu_per_device_type"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis sign_in_num_per_device_type"></div>
+    <div class="kpis pv_per_device_type"></div>
   </div>
+
+  <div class="col-xs-12"><h3>Per unified_referer</h3></div>
 
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis welcome_to_login_uu_per_device_type"></div>
+    <div class="kpis uu_per_unified_referer"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis welcome_to_login_ctr_cvr_per_device_type"></div>
+    <div class="kpis pv_per_unified_referer"></div>
   </div>
 
-  <div class="col-xs-12"><h3>Per channel</h3></div>
-
-  <div class="col-xs-12 col-sm-6">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis sign_in_uu_per_channel"></div>
-  </div>
-  <div class="col-xs-12 col-sm-6">
-    <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis sign_in_num_per_channel"></div>
-  </div>
+  <div class="col-xs-12"><h3>Per unified_channel</h3></div>
 
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis welcome_to_login_uu_per_channel"></div>
+    <div class="kpis uu_per_unified_channel"></div>
   </div>
   <div class="col-xs-12 col-sm-6">
     <%= image_tag asset_path('kpi_admin/ajax-loader.gif'), class: 'loading' %>
-    <div class="kpis welcome_to_login_ctr_cvr_per_channel"></div>
+    <div class="kpis pv_per_unified_channel"></div>
   </div>
 </div>
 
@@ -68,23 +63,27 @@
   function reload() {
     before_reload();
 
-    var url = "<%= one_path %>";
+    var url = "<%= pv_uu_path %>";
     var types = [
-      'sign_in_uu',
-      'sign_in_num',
-      'welcome_to_login_uu',
-      'welcome_to_login_ctr_cvr',
-      'sign_in_uu_per_device_type',
-      'sign_in_num_per_device_type',
-//      'welcome_to_login_uu_per_device_type',
-//      'welcome_to_login_ctr_cvr_per_device_type',
-      'sign_in_uu_per_channel',
-      'sign_in_num_per_channel'
-//      'welcome_to_login_uu_per_channel',
-//      'welcome_to_login_ctr_cvr_per_channel'
+      'uu',
+      'pv',
+      'uu_per_device_type',
+      'pv_per_device_type',
+      'uu_per_unified_referer',
+      'pv_per_unified_referer',
+      'uu_per_unified_channel',
+      'pv_per_unified_channel'
     ];
-    fetch(url, types[0])
+    var types_stacked = [
+      'uu_per_action',
+      'pv_per_action'
+    ];
+
+    $.Deferred().resolve()
+        .then(function(){return fetch(url, types[0])})
         .then(function(){return fetch(url, types[1])})
+        .then(function(){return fetch(url, types_stacked[0], true)})
+        .then(function(){return fetch(url, types_stacked[1], true)})
         .then(function(){return fetch(url, types[2])})
         .then(function(){return fetch(url, types[3])})
         .then(function(){return fetch(url, types[4])})
