@@ -9,7 +9,8 @@ module KpiAdmin
     include Kpis::SignInHelper
     include Kpis::ModalOpenHelper
 
-    METHOD_TYPES = Kpis::PvUuHelper.public_instance_methods +
+    METHOD_TYPES =
+      Kpis::PvUuHelper.public_instance_methods +
       Kpis::SearchNumHelper.public_instance_methods +
       Kpis::SignInHelper.public_instance_methods +
       Kpis::ModalOpenHelper.public_instance_methods
@@ -39,7 +40,6 @@ module KpiAdmin
             sequence_number: sequence_number,
             next_sequence_number: next_sequence_number,
             max_sequence_number: max_sequence_number,
-            sql: show_sql(type, date_array.last),
             url: request.path,
           }
           render json: result, status: 200
