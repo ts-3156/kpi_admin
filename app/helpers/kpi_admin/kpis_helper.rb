@@ -58,8 +58,16 @@ module KpiAdmin
       }
     end
 
-    def show_sql(type, days)
-      ActiveRecord::Base.send(:sanitize_sql_array, [send("#{type}_sql"), placeholder_values(days)])
+    def datetime_label
+      date_array[sequence_number].last.beginning_of_day
+    end
+
+    def first_datetime
+      date_array[sequence_number].first.beginning_of_day
+    end
+
+    def last_datetime
+      date_array[sequence_number].last.end_of_day
     end
 
     def exec_sql(klass, sql)
